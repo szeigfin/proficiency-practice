@@ -2,194 +2,133 @@ import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./styles.css";
 
-const skillUnits = [
+const units = [
   {
-    id: "adjectives",
-    title: "Level 1 Adjectives",
-    function: "Describe people, places, and things",
-    grammar: ["ser", "estar", "adjective agreement"],
+    id: "food",
+    title: "Level 1 Food",
+    icon: "🍎",
+    description: "Food, drinks, and basic meal words",
     words: [
-      ["alto", "tall"],
-      ["bajo", "short"],
-      ["simpático", "nice"],
-      ["trabajador", "hardworking"],
-      ["interesante", "interesting"],
-      ["aburrido", "boring"],
-      ["difícil", "difficult"],
-      ["fácil", "easy"],
-      ["nuevo", "new"],
-      ["viejo", "old"]
+      { es: "el agua", en: "water", icon: "💧" },
+      { es: "el pan", en: "bread", icon: "🥖" },
+      { es: "la manzana", en: "apple", icon: "🍎" },
+      { es: "el queso", en: "cheese", icon: "🧀" },
+      { es: "el pollo", en: "chicken", icon: "🍗" }
     ]
   },
   {
     id: "places",
     title: "Level 1 Places",
-    function: "Talk about school, city, home, and familiar places",
-    grammar: ["estar + location", "hay", "prepositions"],
+    icon: "🏫",
+    description: "School, city, and familiar locations",
     words: [
-      ["la escuela", "school"],
-      ["la clase", "class"],
-      ["la casa", "house"],
-      ["el parque", "park"],
-      ["la biblioteca", "library"],
-      ["el restaurante", "restaurant"],
-      ["la tienda", "store"],
-      ["el cine", "movie theater"],
-      ["la ciudad", "city"],
-      ["el baño", "bathroom"]
+      { es: "la escuela", en: "school", icon: "🏫" },
+      { es: "la casa", en: "house", icon: "🏠" },
+      { es: "el parque", en: "park", icon: "🌳" },
+      { es: "la biblioteca", en: "library", icon: "📚" },
+      { es: "el restaurante", en: "restaurant", icon: "🍽️" }
     ]
   },
   {
-    id: "food",
-    title: "Level 1 Food",
-    function: "Express likes, dislikes, hunger, and food choices",
-    grammar: ["gustar", "tener hambre", "querer"],
+    id: "adjectives",
+    title: "Level 1 Adjectives",
+    icon: "✨",
+    description: "Words to describe people and things",
     words: [
-      ["el agua", "water"],
-      ["la leche", "milk"],
-      ["el pan", "bread"],
-      ["el arroz", "rice"],
-      ["la fruta", "fruit"],
-      ["la manzana", "apple"],
-      ["el queso", "cheese"],
-      ["la sopa", "soup"],
-      ["el pollo", "chicken"],
-      ["la ensalada", "salad"]
-    ]
-  },
-  {
-    id: "classroom",
-    title: "Level 1 Classroom",
-    function: "Understand classroom language and school objects",
-    grammar: ["articles", "tener", "necesitar"],
-    words: [
-      ["el lápiz", "pencil"],
-      ["el bolígrafo", "pen"],
-      ["el cuaderno", "notebook"],
-      ["la mochila", "backpack"],
-      ["la computadora", "computer"],
-      ["la mesa", "table"],
-      ["la silla", "chair"],
-      ["la puerta", "door"],
-      ["la ventana", "window"],
-      ["el libro", "book"]
-    ]
-  },
-  {
-    id: "weather",
-    title: "Level 1 Weather",
-    function: "Describe the weather and environment",
-    grammar: ["hace", "está", "hay"],
-    words: [
-      ["hace sol", "it is sunny"],
-      ["hace frío", "it is cold"],
-      ["hace calor", "it is hot"],
-      ["hace viento", "it is windy"],
-      ["está lloviendo", "it is raining"],
-      ["está nevando", "it is snowing"],
-      ["está nublado", "it is cloudy"],
-      ["la lluvia", "rain"],
-      ["la nieve", "snow"],
-      ["el cielo", "sky"]
+      { es: "alto", en: "tall", icon: "📏" },
+      { es: "bajo", en: "short", icon: "↘️" },
+      { es: "simpático", en: "nice", icon: "😊" },
+      { es: "trabajador", en: "hardworking", icon: "💪" },
+      { es: "interesante", en: "interesting", icon: "🤔" }
     ]
   }
 ];
 
-function shuffle(items) {
-  return [...items].sort(() => Math.random() - 0.5);
+function shuffle(array) {
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
 function App() {
-  const [selectedId, setSelectedId] = useState("adjectives");
+  const [unitId, setUnitId] = useState("food");
   const [mode, setMode] = useState("study");
-  const [questionNumber, setQuestionNumber] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState("");
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answer, setAnswer] = useState("");
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
 
-  const selectedUnit = skillUnits.find((unit) => unit.id === selectedId);
+  const unit = units.find((u) => u.id === unitId);
 
   const question = useMemo(() => {
-    const correct = selectedUnit.words[questionNumber % selectedUnit.words.length];
-    const wrong = shuffle(selectedUnit.words.filter((word) => word[1] !== correct[1]))
+    const correct = unit.words[questionIndex % unit.words.length];
+    const wrong = shuffle(unit.words.filter((w) => w.en !== correct.en))
       .slice(0, 3)
-      .map((word) => word[1]);
+      .map((w) => w.en);
 
     return {
-      prompt: correct[0],
-      answer: correct[1],
-      options: shuffle([correct[1], ...wrong])
+      prompt: correct.es,
+      icon: correct.icon,
+      answer: correct.en,
+      options: shuffle([correct.en, ...wrong])
     };
-  }, [selectedUnit, questionNumber]);
+  }, [unit, questionIndex]);
 
-  function resetQuiz() {
-    setQuestionNumber(0);
-    setScore(0);
-    setSelectedAnswer("");
-    setAnswered(false);
-  }
-
-  function chooseAnswer(option) {
+  function choose(option) {
     if (answered) return;
-
-    setSelectedAnswer(option);
+    setAnswer(option);
     setAnswered(true);
-
-    if (option === question.answer) {
-      setScore(score + 1);
-    }
+    if (option === question.answer) setScore(score + 1);
   }
 
-  function nextQuestion() {
-    setQuestionNumber(questionNumber + 1);
-    setSelectedAnswer("");
+  function next() {
+    setQuestionIndex(questionIndex + 1);
+    setAnswer("");
     setAnswered(false);
+  }
+
+  function reset(newUnitId) {
+    setUnitId(newUnitId);
+    setQuestionIndex(0);
+    setAnswer("");
+    setAnswered(false);
+    setScore(0);
+    setMode("study");
   }
 
   return (
-    <div>
-      <header className="site-header">
+    <div className="app">
+      <header className="hero">
+        <div className="hero-badge">Spanish 1</div>
         <h1>Proficiency Practice Lab</h1>
-        <p>Spanish 1 Skill Builder</p>
+        <p>Build vocabulary first. Use it in real communication next.</p>
       </header>
 
-      <main className="container">
-        <section className="hero card">
-          <h2>Build the words first. Use them in real communication next.</h2>
-          <p>
-            This first layer is old NSE-style topic practice: fast vocabulary review by level and category.
-          </p>
-        </section>
-
-        <section className="grid">
-          {skillUnits.map((unit) => (
+      <main className="layout">
+        <section className="topics">
+          {units.map((u) => (
             <button
-              key={unit.id}
-              className={`card topic-card ${unit.id === selectedId ? "selected" : ""}`}
-              onClick={() => {
-                setSelectedId(unit.id);
-                resetQuiz();
-              }}
+              key={u.id}
+              className={`topic-card ${u.id === unitId ? "active" : ""}`}
+              onClick={() => reset(u.id)}
             >
-              <h3>{unit.title}</h3>
-              <p>{unit.function}</p>
-              <small>{unit.grammar.join(" • ")}</small>
+              <div className="topic-icon">{u.icon}</div>
+              <h2>{u.title}</h2>
+              <p>{u.description}</p>
             </button>
           ))}
         </section>
 
-        <section className="card">
-          <div className="unit-header">
+        <section className="practice-panel">
+          <div className="panel-header">
             <div>
-              <h2>{selectedUnit.title}</h2>
-              <p>{selectedUnit.function}</p>
+              <h2>{unit.title}</h2>
+              <p>{unit.description}</p>
             </div>
 
-            <div className="button-row">
-              <button className={mode === "study" ? "button" : "button light"} onClick={() => setMode("study")}>
+            <div className="tabs">
+              <button className={mode === "study" ? "tab active" : "tab"} onClick={() => setMode("study")}>
                 Study
               </button>
-              <button className={mode === "quiz" ? "button" : "button light"} onClick={() => setMode("quiz")}>
+              <button className={mode === "quiz" ? "tab active" : "tab"} onClick={() => setMode("quiz")}>
                 Quiz
               </button>
             </div>
@@ -197,31 +136,32 @@ function App() {
 
           {mode === "study" && (
             <div className="word-grid">
-              {selectedUnit.words.map(([spanish, english]) => (
-                <div className="word-card" key={spanish}>
-                  <strong>{spanish}</strong>
-                  <span>{english}</span>
+              {unit.words.map((word) => (
+                <div className="word-card" key={word.es}>
+                  <div className="word-icon">{word.icon}</div>
+                  <div className="spanish">{word.es}</div>
+                  <div className="english">{word.en}</div>
                 </div>
               ))}
             </div>
           )}
 
           {mode === "quiz" && (
-            <div className="quiz-box">
-              <div className="score">Score: {score}/{questionNumber + (answered ? 1 : 0)}</div>
+            <div className="quiz">
+              <div className="score">Score: {score}/{questionIndex + (answered ? 1 : 0)}</div>
+              <div className="quiz-icon">{question.icon}</div>
+              <p className="quiz-label">Choose the best meaning:</p>
+              <h2 className="quiz-prompt">{question.prompt}</h2>
 
-              <p className="label">Choose the best meaning:</p>
-              <h2 className="prompt">{question.prompt}</h2>
-
-              <div className="answer-grid">
+              <div className="answers">
                 {question.options.map((option) => (
                   <button
                     key={option}
-                    onClick={() => chooseAnswer(option)}
+                    onClick={() => choose(option)}
                     className={
                       answered && option === question.answer
                         ? "answer correct"
-                        : answered && option === selectedAnswer
+                        : answered && option === answer
                         ? "answer wrong"
                         : "answer"
                     }
@@ -233,8 +173,8 @@ function App() {
 
               {answered && (
                 <div className="feedback">
-                  <strong>Correct answer:</strong> {question.answer}
-                  <button className="button" onClick={nextQuestion}>Next</button>
+                  <span>Correct answer: <strong>{question.answer}</strong></span>
+                  <button onClick={next}>Next</button>
                 </div>
               )}
             </div>
